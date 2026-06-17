@@ -9,10 +9,11 @@ def run_joint_chronological_cci_pipeline(
     cluster_key: str,
     root_cell_type: str = None,
     species: str = "human",
-    top_n_per_lineage: int = 4
+    top_n_per_lineage: int = 4,
+    n_lineages: int = None  
 ):
     """Executes the master chronological CellRank + LIANA processing pipeline."""
-    print(f"=== 🚀 LAUNCHING JOINT CHRONOLOGICAL CCI PIPELINE ===")
+    print(f"LAUNCHING JOINT CHRONOLOGICAL CCI PIPELINE...")
     
     if "iroot" in adata.uns: del adata.uns["iroot"]
     if "diffmap" not in adata.obsm: sc.tl.diffmap(adata)
@@ -38,7 +39,12 @@ def run_joint_chronological_cci_pipeline(
 
     estimator = cr.estimators.GPCCA(combined_kernel)
     estimator.compute_schur()
-    estimator.compute_macrostates(n_states=(2, 6), n_cells=max(5, len(adata)//4-5), cluster_key=cluster_key)
+
+    states_to_find = n_lineages if n_lineages is not None else (2, 6)
+    
+    estimator.compute_macrostates(n_states=states_to_find, n_cells=max(5, len(adata)//4-5), cluster_key=cluster_key)
+    
+    #estimator.compute_macrostates(n_states=(2, 6), n_cells=max(5, len(adata)//4-5), cluster_key=cluster_key)
     estimator.predict_terminal_states()
     estimator.compute_fate_probabilities()
 

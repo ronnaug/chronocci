@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import cellrank as cr
 
 def plot_cell_type_relay_timeline(
     adata: sc.AnnData, 
