@@ -11,7 +11,7 @@
 You can install the package directly from GitHub using `pip`:
 
 ```bash
-pip install git+https://github.com/chronocci
+pip install git+https://github.com/ronnaug/chronocci
 ```
 
 ## Quick Start
