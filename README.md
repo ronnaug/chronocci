@@ -1,6 +1,6 @@
-# TimelineCCI 
+# ChronoCCI 
 
-**TimelineCCI** is a specialized single-cell bioinformatics tool designed to align cell-cell communication (CCI) networks along branching cell-fate trajectories. By combining the Markov chain destiny mapping of **CellRank** with the consensus ligand-receptor databases of **LIANA**, it reconstructs the chronological cascade of signaling waves and automatically prioritizes molecular gatekeepers governing lineage choices.
+**ChronoCCI** is a specialized single-cell bioinformatics tool designed to align cell-cell communication (CCI) networks along branching cell-fate trajectories. By combining the Markov chain destiny mapping of **CellRank** with the consensus ligand-receptor databases of **LIANA**, it reconstructs the chronological cascade of signaling waves and automatically prioritizes molecular gatekeepers governing lineage choices.
 
 ## Features
 * **Automated Trajectory Alignment:** Integrates with CellRank's `GPCCA` to track signals across continuous cell lineages.
