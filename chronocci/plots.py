@@ -161,7 +161,7 @@ def plot_signaling_bifurcation(
     plt.tight_layout()
     plt.savefig(f"CCI_Bifurcation_{lineage_A}_vs_{lineage_B}_{output_name}.pdf", bbox_inches="tight", dpi=300)
     
-    if matplotlib.get_backend().lower() != 'agg':
+    if plt.get_backend().lower() != 'agg':
         plt.show()
     else:
         plt.close(fig)
