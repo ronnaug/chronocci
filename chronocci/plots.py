@@ -87,7 +87,7 @@ def plot_signaling_bifurcation(
     figsize: tuple = (12, 8),
     output_name: str = "study"
 ):
-    """Renders the mirrored Signaling Bifurcation Area Map."""
+    """Renders the mirrored Signaling Bifurcation Area Map with premium pastel palette."""
     if df_final_sorted.empty: return
     top_df = df_final_sorted.head(min(top_n_pairs, len(df_final_sorted))).copy()
     
@@ -99,7 +99,10 @@ def plot_signaling_bifurcation(
     if len(top_df) == 1: axes = [axes]
         
     plt.rcParams["font.family"] = "sans-serif"
-    color_A, color_B = "#4aa3df", "#e67e22"
+    
+    # Эстетичная пастельная гамма
+    color_A, color_B = "#A0C4DF", "#FBC4B6"
+    edge_A, edge_B = "#78A2CC", "#EAA294"
 
     for idx, (df_idx, row_data) in enumerate(top_df.iterrows()):
         ax = axes[idx]
@@ -114,28 +117,55 @@ def plot_signaling_bifurcation(
                 try:
                     model.fit(real_g, lineage=l, time_key="timeline_time")
                     _, y_pred, _ = model.predict(x_test=time_grid)
-                    gene_trends_local[gene_sym.upper()] = y_pred
+                    gene_trends_local[gene_sym.upper()] = np.clip(y_pred, 0, None)
                 except:
                     w = np.array(adata.obsm["lineages_fwd"][l].X).flatten()
                     s_idx = np.argsort(adata.obs["timeline_time"].values)
+                    t_s = adata.obs["timeline_time"].values[s_idx]
                     g_s = (adata[:, real_g].X.toarray().flatten() if hasattr(adata[:, real_g].X, "toarray") else adata[:, real_g].X.flatten())[s_idx]
-                    gene_trends_local[gene_sym.upper()] = np.array([np.mean(g_s[(adata.obs["timeline_time"].values[s_idx] >= t-0.1) & (adata.obs["timeline_time"].values[s_idx] <= t+0.1) & (w[s_idx] > 0)]) if np.sum((adata.obs["timeline_time"].values[s_idx] >= t-0.1) & (adata.obs["timeline_time"].values[s_idx] <= t+0.1) & (w[s_idx] > 0)) > 0 else 0.0 for t in time_grid])
+                    
+                    y_fallback = [np.mean(g_s[(t_s >= t-0.1) & (t_s <= t+0.1) & (w[s_idx] > 0)]) if np.sum((t_s >= t-0.1) & (t_s <= t+0.1) & (w[s_idx] > 0)) > 0 else 0.0 for t in time_grid]
+                    gene_trends_local[gene_sym.upper()] = np.clip(np.array(y_fallback), 0, None)
+                    
             trends[l] = gene_trends_local[lig.upper()] * gene_trends_local[rec.upper()]
             
+        # Рассчитываем нормировочный максимум ПОСЛЕ того, как собрали оба тренда
         max_total = max(np.max(trends[lineage_A]), np.max(trends[lineage_B])) or 1.0
-        ax.fill_between(time_grid, trends[lineage_A]/max_total, 0, color=color_A, alpha=0.75, label=f"Path to {lineage_A}" if idx==0 else "")
-        ax.fill_between(time_grid, -trends[lineage_B]/max_total, 0, color=color_B, alpha=0.75, label=f"Path to {lineage_B}" if idx==0 else "")
         
-        ax.axhline(0, color="#666666", linestyle="-", linewidth=0.8)
-        ax.set_ylabel("Intensity", fontsize=8); ax.set_title(f"Bifurcation of Dynamics: {pair_name}", fontsize=10, weight="bold", pad=5)
-        ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False); ax.spines["left"].set_color("#cccccc"); ax.spines["bottom"].set_color("#cccccc"); ax.get_yaxis().set_ticks([])
+        # Отрисовка пути А с аккуратной полупрозрачной обводкой
+        ax.fill_between(time_grid, trends[lineage_A]/max_total, 0, 
+                        color=color_A, edgecolor=edge_A, linewidth=1.0, alpha=0.85, 
+                        label=f"Path to {lineage_A}" if idx==0 else "")
+                        
+        # Отрисовка пути Б с аккуратной полупрозрачной обводкой (зеркально вниз)
+        ax.fill_between(time_grid, -trends[lineage_B]/max_total, 0, 
+                        color=color_B, edgecolor=edge_B, linewidth=1.0, alpha=0.85, 
+                        label=f"Path to {lineage_B}" if idx==0 else "")
+        
+        # Аккуратная разделительная пунктирная ось
+        ax.axhline(0, color="#b0b0b0", linestyle="--", linewidth=0.8, alpha=0.7)
+        
+        ax.set_ylabel("Intensity", fontsize=8)
+        ax.set_title(f"Bifurcation of Dynamics: {pair_name}", fontsize=10, weight="bold", pad=5)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_color("#cccccc")
+        ax.spines["bottom"].set_color("#cccccc")
+        ax.get_yaxis().set_ticks([])
 
-    axes[-1].set_xlim(0, 1); axes[-1].set_xlabel("Global Chronological Pseudotime", fontsize=11, labelpad=10)
+    axes[-1].set_xlim(0, 1)
+    axes[-1].set_xlabel("Global Chronological Pseudotime", fontsize=11, labelpad=10)
     fig.suptitle(f"CCI Fate Decision Map: {lineage_A} vs {lineage_B}", fontsize=13, weight="bold", y=0.98)
     fig.legend(loc="upper right", bbox_to_anchor=(0.95, 0.98), frameon=False, fontsize=10)
+    
     plt.tight_layout()
     plt.savefig(f"CCI_Bifurcation_{lineage_A}_vs_{lineage_B}_{output_name}.pdf", bbox_inches="tight", dpi=300)
-    plt.show()
+    
+    if matplotlib.get_backend().lower() != 'agg':
+        plt.show()
+    else:
+        plt.close(fig)
+
 
 def plot_signaling_streamgraph(
     adata: sc.AnnData,
