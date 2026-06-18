@@ -42,7 +42,7 @@ def run_joint_chronological_cci_pipeline(
 
     states_to_find = n_lineages if n_lineages is not None else (2, 6)
     
-    estimator.compute_macrostates(n_states=states_to_find,  n_cells=None, cluster_key=cluster_key)
+    estimator.compute_macrostates(n_states=states_to_find,  n_cells=None)
     
     estimator.predict_terminal_states()
     estimator.compute_fate_probabilities()

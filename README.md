@@ -2,6 +2,7 @@
 
 **ChronoCCI** is a specialized single-cell bioinformatics tool designed to align cell-cell communication (CCI) networks along branching cell-fate trajectories. By combining the Markov chain destiny mapping of **CellRank** with the consensus ligand-receptor databases of **LIANA**, it reconstructs the chronological cascade of signaling waves and automatically prioritizes molecular gatekeepers governing lineage choices.
 
+
 ## Features
 * **Automated Trajectory Alignment:** Integrates with CellRank's `GPCCA` to track signals across continuous cell lineages.
 * **Cell-Type Relay Mapping:** Tracks the donor-to-acceptor communication channels active at the exact peak of each molecular wave.
@@ -12,11 +13,15 @@
   <img src="examples/streamgraph_preview.png" width="850" alt="ChronoCCI Streamgraph Cascade"/>
 </p>
 
+
+
 ## Installation
 You can install the package directly from GitHub using `pip`:
 
 ```bash
 pip install git+https://github.com/ronnaug/chronocci
+
+
 ```
 
 ## Quick Start
