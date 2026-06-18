@@ -237,7 +237,7 @@ def plot_signaling_streamgraph(
     print(f"💾 Integrative Streamgraph successfully saved to '{stream_filename}'!")
     
     # Avoid execution halts on servers without graphical interfaces (like Github Actions)
-    if matplotlib.get_backend().lower() != 'agg':
+    if mpl.get_backend().lower() != 'agg':
         plt.show()
     else:
         plt.close(fig)
