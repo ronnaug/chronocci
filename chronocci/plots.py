@@ -150,14 +150,14 @@ def plot_signaling_streamgraph(
     of multi-lineage cell-cell interactions over pseudotime.
     """
     if df_final_sorted.empty:
-        print("⚠️ Warning: df_final_sorted is empty. Skipping streamgraph plot.")
+        print("Warning: df_final_sorted is empty. Skipping streamgraph plot.")
         return df_final_sorted
 
     # Match genes regardless of lowercase/uppercase format in your dataframe
     adata_genes_upper = {g.upper(): g for g in adata.var_names}
     joint_labels = []
     
-    print("🔍 Analyzing paracrine interactions across cell types at trajectory peaks...")
+    print("Analyzing paracrine interactions across cell types at trajectory peaks...")
     
     for _, row in df_final_sorted.iterrows():
         lig_g = adata_genes_upper.get(row["ligand"].upper())
@@ -234,7 +234,7 @@ def plot_signaling_streamgraph(
     # Save Outputs
     stream_filename = f"CCI_Streamgraph_{output_name}.pdf"
     plt.savefig(stream_filename, bbox_inches="tight", dpi=300)
-    print(f"💾 Integrative Streamgraph successfully saved to '{stream_filename}'!")
+    print(f"Integrative Streamgraph successfully saved to '{stream_filename}'!")
     
     # Avoid execution halts on servers without graphical interfaces (like Github Actions)
     if mpl.get_backend().lower() != 'agg':

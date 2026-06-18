@@ -12,7 +12,7 @@ def run_joint_chronological_cci_pipeline(
     top_n_per_lineage: int = 4,
     n_lineages: int = None  
 ):
-    """Executes the master chronological CellRank + LIANA processing pipeline."""
+    """Executes the master chronological CellRank + LIANA processing pipeline with non-negative expression floors."""
     print(f"LAUNCHING JOINT CHRONOLOGICAL CCI PIPELINE...")
     
     if "iroot" in adata.uns: del adata.uns["iroot"]
@@ -44,7 +44,6 @@ def run_joint_chronological_cci_pipeline(
     
     estimator.compute_macrostates(n_states=states_to_find, n_cells=max(5, len(adata)//4-5), cluster_key=cluster_key)
     
-    #estimator.compute_macrostates(n_states=(2, 6), n_cells=max(5, len(adata)//4-5), cluster_key=cluster_key)
     estimator.predict_terminal_states()
     estimator.compute_fate_probabilities()
 
@@ -76,7 +75,8 @@ def run_joint_chronological_cci_pipeline(
             try:
                 model.fit(real_gene_name, lineage=lineage, time_key="timeline_time")
                 _, y_pred, _ = model.predict(x_test=time_grid)
-                gene_trends[gene] = y_pred
+                # FIX 1: Clip negative extrapolated values from GAM model to absolute zero
+                gene_trends[gene] = np.clip(y_pred, 0, None)
             except:
                 fate_weights = np.array(adata.obsm["lineages_fwd"][lineage].X).flatten()
                 sorted_idx = np.argsort(adata.obs["timeline_time"].values)
@@ -91,7 +91,8 @@ def run_joint_chronological_cci_pipeline(
                         y_pred.append(np.average(g_sort[mask], weights=w_sort[mask]))
                     else:
                         y_pred.append(0.0)
-                gene_trends[gene] = np.array(y_pred)
+                # FIX 2: Safeguard fallback window tracking values from negative raw values
+                gene_trends[gene] = np.clip(np.array(y_pred), 0, None)
 
         df_trends = pd.DataFrame(gene_trends, index=time_grid)
 
@@ -101,7 +102,7 @@ def run_joint_chronological_cci_pipeline(
             if lig in df_trends.columns and rec in df_trends.columns:
                 score_vector = df_trends[lig].values * df_trends[rec].values
                 max_val = np.max(score_vector)
-                if max_val == 0: continue
+                if max_val <= 1e-9: continue # Discard mathematically dead combinations
                 
                 cci_results.append({
                     "interaction_pair": f"{row['ligand']}_{row['receptor']}",
@@ -130,6 +131,7 @@ def run_joint_chronological_cci_pipeline(
 
     df_final_sorted = df_unique_pairs.sort_values(by="peak_pseudotime").reset_index(drop=True)
     return df_final_sorted
+
 
 
 def snoop_py (
