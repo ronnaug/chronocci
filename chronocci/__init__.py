@@ -12,4 +12,5 @@ __all__ = [
     "snoop_py",
     "plot_cell_type_relay_timeline",
     "plot_signaling_bifurcation"
+    "plot_signaling_streamgraph"
 ]
