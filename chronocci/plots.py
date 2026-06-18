@@ -51,7 +51,7 @@ def plot_cell_type_relay_timeline(
     ax, ax_leg = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
     ax_leg.axis("off")
     
-    ax.hlines(y=top_df.index, xmin=-0.05, xmax=1.05, colors="#f5f5f5", zorder=1)
+    #ax.hlines(y=top_df.index, xmin=-0.05, xmax=1.05, colors="#f5f5f5", zorder=1)
     size_factor = 4.0
     scatter = ax.scatter(top_df["peak_pseudotime"], top_df.index, s=top_df["max_signal_raw"]*size_factor, c=point_colors, edgecolors="#222222", linewidths=0.8, zorder=2, alpha=0.95)
 
@@ -136,3 +136,110 @@ def plot_signaling_bifurcation(
     plt.tight_layout()
     plt.savefig(f"CCI_Bifurcation_{lineage_A}_vs_{lineage_B}_{output_name}.pdf", bbox_inches="tight", dpi=300)
     plt.show()
+
+def plot_signaling_streamgraph(
+    adata: sc.AnnData,
+    df_final_sorted: pd.DataFrame,
+    cluster_key: str,
+    time_grid: np.ndarray,
+    figsize: tuple = (16, 9),
+    output_name: str = "study"
+):
+    """
+    Renders an integrative Streamgraph visualization showing the chronological cascade 
+    of multi-lineage cell-cell interactions over pseudotime.
+    """
+    if df_final_sorted.empty:
+        print("⚠️ Warning: df_final_sorted is empty. Skipping streamgraph plot.")
+        return df_final_sorted
+
+    # Match genes regardless of lowercase/uppercase format in your dataframe
+    adata_genes_upper = {g.upper(): g for g in adata.var_names}
+    joint_labels = []
+    
+    print("🔍 Analyzing paracrine interactions across cell types at trajectory peaks...")
+    
+    for _, row in df_final_sorted.iterrows():
+        lig_g = adata_genes_upper.get(row["ligand"].upper())
+        rec_g = adata_genes_upper.get(row["receptor"].upper())
+        peak_t = row["peak_pseudotime"]
+        
+        # Guard against missing genes in the object
+        if not lig_g or not rec_g:
+            joint_labels.append(f"{row['ligand']} → {row['receptor']} [Lineage: {row['lineage']}] (Gene Missing)")
+            continue
+            
+        l_exp = adata[:, lig_g].X.toarray().flatten() if hasattr(adata[:, lig_g].X, "toarray") else adata[:, lig_g].X.flatten()
+        r_exp = adata[:, rec_g].X.toarray().flatten() if hasattr(adata[:, rec_g].X, "toarray") else adata[:, rec_g].X.flatten()
+        
+        time_mask = (adata.obs["timeline_time"].values >= peak_t - 0.15) & (adata.obs["timeline_time"].values <= peak_t + 0.15)
+        
+        if np.sum(time_mask) > 0:
+            df_peak_cells = pd.DataFrame({
+                "cluster": adata.obs[cluster_key].values[time_mask],
+                "l": l_exp[time_mask],
+                "r": r_exp[time_mask]
+            })
+            donor = df_peak_cells.groupby("cluster", observed=True)["l"].mean().idxmax()
+            acceptor = df_peak_cells.groupby("cluster", observed=True)["r"].mean().idxmax()
+        else:
+            donor, acceptor = "Unknown", "Unknown"
+            
+        joint_labels.append(f"{row['ligand']} ({donor}) → {row['receptor']} ({acceptor}) [Lineage: {row['lineage']}]")
+
+    # Reconstruct the trajectories matrix into a 2D array
+    trajectories_matrix = np.array(df_final_sorted["trajectory_norm"].tolist())
+
+    # Generate aesthetic pastel colors dynamically
+    n_colors = len(df_final_sorted)
+    colors = [colorsys.hls_to_rgb(i / n_colors, 0.70, 0.55) for i in range(n_colors)]
+
+    # Draw the streamgraph canvas
+    plt.rcParams["font.family"] = "sans-serif"
+    fig, ax = plt.subplots(figsize=figsize, dpi=150)
+    
+    ax.stackplot(
+        time_grid, 
+        trajectories_matrix, 
+        labels=joint_labels, 
+        baseline="wiggle", 
+        colors=colors,            
+        alpha=0.95,               
+        edgecolor="white", 
+        linewidth=0.4
+    )
+    
+    # Styling and Labels
+    ax.set_xlim(np.min(time_grid), np.max(time_grid))
+    ax.set_xlabel("Global Chronological Pseudotime (Tissue Differentiation)", fontsize=11, labelpad=10)
+    ax.set_ylabel("Relative Interaction Intensity (Stream Width)", fontsize=11, labelpad=10)
+    ax.set_title("Unified Chronological Cascade of Multi-Lineage Interactions", fontsize=13, weight="bold", pad=15)
+    
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(True)
+    ax.get_yaxis().set_ticks([])
+    
+    # Legend Placement outside the chart
+    ax.legend(
+        loc="center left", 
+        bbox_to_anchor=(1.02, 0.5), 
+        title="Global Interactions Cascade\n[Donor → Acceptor (Trajectory)]", 
+        frameon=False, 
+        fontsize=9
+    )
+    
+    plt.tight_layout()
+    
+    # Save Outputs
+    stream_filename = f"CCI_Streamgraph_{output_name}.pdf"
+    plt.savefig(stream_filename, bbox_inches="tight", dpi=300)
+    print(f"💾 Integrative Streamgraph successfully saved to '{stream_filename}'!")
+    
+    # Avoid execution halts on servers without graphical interfaces (like Github Actions)
+    if matplotlib.get_backend().lower() != 'agg':
+        plt.show()
+    else:
+        plt.close(fig)
+
+    return df_final_sorted

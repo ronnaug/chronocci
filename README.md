@@ -41,7 +41,19 @@ ch.plot_cell_type_relay_timeline(
     output_name="my_blood_study"
 )
 
-# 4. Screen for asymmetric switches and plot the bifurcation map
+# 4. Generate an integrative Streamgraph of unified multi-lineage interactions
+# Define the same time grid vector used in your pipeline execution (e.g., 30 points)
+time_grid = np.linspace(0, 1, 30)
+
+ch.plot_signaling_streamgraph(
+    adata=adata,
+    df_final_sorted=df_results,
+    cluster_key="louvain",
+    time_grid=time_grid,
+    output_name="Unified_Tissue_Cascade"
+)
+
+# 5. Screen for asymmetric switches and plot the bifurcation map
 df_asymmetric = ch.snoop_py (
     adata=adata,
     df_final_sorted=df_results,
