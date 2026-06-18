@@ -6,6 +6,11 @@
 * **Automated Trajectory Alignment:** Integrates with CellRank's `GPCCA` to track signals across continuous cell lineages.
 * **Cell-Type Relay Mapping:** Tracks the donor-to-acceptor communication channels active at the exact peak of each molecular wave.
 * **Bifurcation Screening:** Utilizes a chronological Mean Absolute Error (MAE) scoring formula to scan for asymmetric signaling patterns between diverging paths.
+* **Integrative Streamgraphs:** Visualizes multi-lineage interaction intensities as a continuous, flowing chronological cascade.
+
+<p align="center">
+  <img src="examples/streamgraph_preview.png" width="850" alt="ChronoCCI Streamgraph Cascade"/>
+</p>
 
 ## Installation
 You can install the package directly from GitHub using `pip`:
