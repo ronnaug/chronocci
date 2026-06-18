@@ -4,8 +4,10 @@ from .pipeline import (
 )
 from .plots import (
     plot_cell_type_relay_timeline,
-    plot_signaling_bifurcation
+    plot_signaling_bifurcation, 
+    plot_signaling_streamgraph
 )
+
 
 __all__ = [
     "run_joint_chronological_cci_pipeline",
