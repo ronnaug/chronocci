@@ -140,10 +140,9 @@ def snoop_py (
     lineage_A: str,
     lineage_B: str
 ) -> pd.DataFrame:
-    """Ranks and filters ligand-receptor pairs based on chronological MAE asymmetry."""
+    """Ranks and filters ligand-receptor pairs based on chronological MAE asymmetry with non-negative floors."""
     print(f"Screening for highly asymmetric CCI markers:\n{lineage_A} vs {lineage_B}...")
 
-    
     time_grid = np.linspace(0, 1, 30)
     model = cr.models.GAM(adata)
     adata_genes_upper = {g.upper(): g for g in adata.var_names}
@@ -159,13 +158,18 @@ def snoop_py (
                 try:
                     model.fit(real_g, lineage=l, time_key="timeline_time")
                     _, y_pred, _ = model.predict(x_test=time_grid)
-                    gene_trends_local[gene_sym.upper()] = y_pred
+                    # FIX 1: Enforce zero floor on snoop's internal GAM predictions
+                    gene_trends_local[gene_sym.upper()] = np.clip(y_pred, 0, None)
                 except:
                     w = np.array(adata.obsm["lineages_fwd"][l].X).flatten()
                     s_idx = np.argsort(adata.obs["timeline_time"].values)
                     t_s = adata.obs["timeline_time"].values[s_idx]
                     g_s = (adata[:, real_g].X.toarray().flatten() if hasattr(adata[:, real_g].X, "toarray") else adata[:, real_g].X.flatten())[s_idx]
-                    gene_trends_local[gene_sym.upper()] = np.array([np.mean(g_s[(t_s >= t-0.1) & (t_s <= t+0.1) & (w[s_idx] > 0)]) if np.sum((t_s >= t-0.1) & (t_s <= t+0.1) & (w[s_idx] > 0)) > 0 else 0.0 for t in time_grid])
+                    
+                    y_fallback = [np.mean(g_s[(t_s >= t-0.1) & (t_s <= t+0.1) & (w[s_idx] > 0)]) if np.sum((t_s >= t-0.1) & (t_s <= t+0.1) & (w[s_idx] > 0)) > 0 else 0.0 for t in time_grid]
+                    # FIX 2: Enforce zero floor on snoop's fallback mechanism
+                    gene_trends_local[gene_sym.upper()] = np.clip(np.array(y_fallback), 0, None)
+                    
             trends[l] = gene_trends_local[lig.upper()] * gene_trends_local[rec.upper()]
             
         vec_A, vec_B = trends[lineage_A], trends[lineage_B]
@@ -180,3 +184,4 @@ def snoop_py (
     df_bif["bifurcation_score"] = bifurcation_scores
     df_bif = df_bif.sort_values(by="bifurcation_score", ascending=False).reset_index(drop=True)
     return df_bif
+
