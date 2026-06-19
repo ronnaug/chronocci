@@ -241,8 +241,8 @@ def plot_signaling_streamgraph(
     
     # Styling and Labels
     ax.set_xlim(np.min(time_grid), np.max(time_grid))
-    ax.set_xlabel("Global Chronological Pseudotime (Tissue Differentiation)", fontsize=11, labelpad=10)
-    ax.set_ylabel("Relative Interaction Intensity (Stream Width)", fontsize=11, labelpad=10)
+    ax.set_xlabel("Global Chronological Pseudotime", fontsize=11, labelpad=10)
+    ax.set_ylabel("Relative Interaction Intensity", fontsize=11, labelpad=10)
     ax.set_title("Unified Chronological Cascade of Multi-Lineage Interactions", fontsize=13, weight="bold", pad=15)
     
     ax.spines["top"].set_visible(False)
@@ -254,7 +254,7 @@ def plot_signaling_streamgraph(
     ax.legend(
         loc="center left", 
         bbox_to_anchor=(1.02, 0.5), 
-        title="Global Interactions Cascade\n[Donor → Acceptor (Trajectory)]", 
+        title="Global Interactions Cascade\n[Donor → Acceptor]", 
         frameon=False, 
         fontsize=9
     )
