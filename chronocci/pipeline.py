@@ -45,7 +45,7 @@ def run_joint_chronological_cci_pipeline(
     estimator.compute_macrostates(n_states=states_to_find,  n_cells=None)
     
     estimator.predict_terminal_states()
-    estimator.compute_fate_probabilities()
+    estimator.compute_fate_probabilities(solver="direct", check_sum_tol=1e-2)
 
     adata.obsm["lineages_fwd"] = estimator.fate_probabilities
     available_lineages = list(estimator.fate_probabilities.names)
