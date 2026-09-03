@@ -7,13 +7,13 @@ try:
 except ImportError:
     import anndata
     
-    # Создаем фиктивные модули в sys.modules
+  
     if 'anndata._io' not in sys.modules:
         sys.modules['anndata._io'] = types.ModuleType('anndata._io')
     if 'anndata._io.specs' not in sys.modules:
         sys.modules['anndata._io.specs'] = types.ModuleType('anndata._io.specs')
     
-    # Инициализируем methods
+
     methods_mod = types.ModuleType('anndata._io.specs.methods')
     sys.modules['anndata._io.specs.methods'] = methods_mod
     
@@ -21,25 +21,31 @@ except ImportError:
     registry_mod = types.ModuleType('anndata._io.specs.registry')
     sys.modules['anndata._io.specs.registry'] = registry_mod
     
-    # Наполняем заглушками
+
     class _DummyGroup: pass
     methods_mod.H5Group = _DummyGroup
     methods_mod.ZarrGroup = _DummyGroup
     methods_mod.write_basic = lambda *args, **kwargs: None
     
-    registry_mod._REGISTRY = {}
-    class _IOSpec: pass
+
+    class _DummyRegistry:
+        def register_write(self, *args, **kwargs):
+
+            return lambda func: func
+        def register_read(self, *args, **kwargs):
+            return lambda func: func
+
+    registry_mod._REGISTRY = _DummyRegistry() 
+    
+    class _IOSpec:
+        def __init__(self, *args, **kwargs): pass
     registry_mod.IOSpec = _IOSpec
 
-    # Привязываем к объекту anndata, чтобы tree-импорты не ломались
     anndata._io = sys.modules['anndata._io']
     anndata._io.specs = sys.modules['anndata._io.specs']
     anndata._io.specs.methods = methods_mod
     anndata._io.specs.registry = registry_mod
 
-# ==============================================================================
-# 2. ВТОРОЙ БЛОК: ТЕПЕРЬ БЕЗОПАСНО ИМПОРТИРУЕМ ВАШИ ФУНКЦИИ
-# ==============================================================================
 from .pipeline import (
     run_joint_chronological_cci_pipeline,
     snoop_py 
