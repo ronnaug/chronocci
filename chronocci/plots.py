@@ -15,6 +15,11 @@ def plot_cell_type_relay_timeline(
     output_name: str = "study"
 ):
     """Renders the chronological dot-relay timeline map."""
+    import colorsys  
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    
     if df_final_sorted.empty: return
     top_df = df_final_sorted.head(top_n).copy()
     
@@ -51,12 +56,37 @@ def plot_cell_type_relay_timeline(
     ax, ax_leg = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
     ax_leg.axis("off")
     
-    #ax.hlines(y=top_df.index, xmin=-0.05, xmax=1.05, colors="#f5f5f5", zorder=1)
-    size_factor = 4.0
-    scatter = ax.scatter(top_df["peak_pseudotime"], top_df.index, s=top_df["max_signal_raw"]*size_factor, c=point_colors, edgecolors="#222222", linewidths=0.8, zorder=2, alpha=0.95)
+    size_factor = 600.0 
+    max_signal = top_df["max_signal_raw"].max()
+    min_signal = top_df["max_signal_raw"].min()
+    
+    denom = (max_signal - min_signal) if max_signal != min_signal else 1.0
+    
+    normalized_sizes = ((top_df["max_signal_raw"] - min_signal) / denom + 0.3) * size_factor
+
+    scatter = ax.scatter(
+        top_df["peak_pseudotime"], 
+        top_df.index, 
+        s=normalized_sizes, 
+        c=point_colors, 
+        edgecolors="#222222", 
+        linewidths=0.8, 
+        zorder=2, 
+        alpha=0.95
+    )
 
     for i, row in top_df.iterrows():
-        ax.text(row["peak_pseudotime"] + 0.015, i + 0.1, row["interaction_pair"], fontsize=9.5, weight="bold", color="#1a252f", va="bottom", ha="left")
+        ax.text(
+            row["peak_pseudotime"] + 0.025,  
+            i,                               
+            row["interaction_pair"], 
+            fontsize=9.5, 
+            weight="bold", 
+            color="#1a252f", 
+            va="center",                     
+            ha="left"
+        )
+
 
     ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.75, len(top_df) - 0.25)
     ax.set_yticks(top_df.index); ax.set_yticklabels(top_df["communication_axis"], fontsize=11, weight="bold", color="#2c3e50")
@@ -68,9 +98,36 @@ def plot_cell_type_relay_timeline(
     legend_color = ax_leg.legend(color_lines, unique_lineages, title="Biological Lineage", title_fontsize=9.5, fontsize=9, frameon=False, loc="upper left", bbox_to_anchor=(0.0, 0.75))
     ax_leg.add_artist(legend_color)
 
-    legend_vals = np.round(np.linspace(top_df["max_signal_raw"].min(), top_df["max_signal_raw"].max(), 5), 1)
-    size_lines = [plt.Line2D([], [], marker="o", color="w", markerfacecolor="#7f8c8d", markeredgecolor="#222222", markersize=np.sqrt(val * size_factor) * 1.5, alpha=0.7) for val in legend_vals]
-    legend_size = ax_leg.legend(size_lines, [f"{val}" for val in legend_vals], title="Interaction Score", title_fontsize=9.5, fontsize=9, frameon=False, loc="upper left", bbox_to_anchor=(0.0, 0.40))
+    
+    legend_vals = np.round(np.linspace(min_signal, max_signal, 5), 1)
+    
+
+    legend_sizes_area = ((legend_vals - min_signal) / denom + 0.3) * size_factor
+    
+    size_lines = [
+        plt.Line2D(
+            [], [], 
+            marker="o", 
+            color="w", 
+            markerfacecolor="#7f8c8d", 
+            markeredgecolor="#222222", 
+            # Переводим площадь s (из scatter) в линейный диаметр markersize для Line2D
+            markersize=np.sqrt(s) * 0.9, 
+            alpha=0.7
+        ) 
+        for s in legend_sizes_area
+    ]
+    
+    legend_size = ax_leg.legend(
+        size_lines, 
+        [f"{val}" for val in legend_vals], 
+        title="Interaction Score", 
+        title_fontsize=9.5, 
+        fontsize=9, 
+        frameon=False, 
+        loc="upper left", 
+        bbox_to_anchor=(0.0, 0.40)
+    )
     ax_leg.add_artist(legend_size)
 
     plt.subplots_adjust(left=0.20, right=0.95, top=0.90, bottom=0.12)

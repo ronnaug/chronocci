@@ -16,13 +16,14 @@ setup(
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9, <3.12", 
     install_requires=[
-        "scanpy>=1.9.0",
-        "cellrank>=2.0.0",
-        "liana>=1.0.0",
-        "numpy>=1.22.0",
-        "pandas>=1.4.0",
-        "matplotlib>=3.5.0",
+        "scanpy==1.10.2",            
+        "cellrank==2.0.4",           
+        "liana>=1.0.0,<=1.2.0",      
+        "numpy>=1.22.0,<2.0.0",      
+        "pandas>=1.4.0,<2.2.0",      
+        "matplotlib>=3.5.0,<3.9.0",
     ],
+
 )
