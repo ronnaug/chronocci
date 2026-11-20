@@ -75,7 +75,9 @@ ch.plot_signaling_bifurcation(
     adata=adata,
     df_final_sorted=df_asymmetric,
     lineage_A="CD8 T cells",
-    lineage_B="CD14+ Monocytes"
+    lineage_B="CD14+ Monocytes",
+    top_n_pairs=4,
+    output_name="my_blood_study"
 )
 ```
 
@@ -97,8 +99,4 @@ If you use **ChronoCCI** in your research, please cite our paper:
   doi       = {10.1186/s13036-026-00787-x},
   url       = {https://doi.org/10.1186/s13036-026-00787-x}
 }
-
-    top_n_pairs=4,
-    output_name="my_blood_study"
-)
 ```
