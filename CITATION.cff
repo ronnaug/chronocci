@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ChronoCCI"
+authors:
+  - family-names: "Puzanov"
+    given-names: "Grigory"
+preferred-citation:
+  type: article
+  title: "ChronoCCI decodes the chronological logic of cell-cell communication along branching single-cell trajectories"
+  authors:
+    - family-names: "Puzanov"
+      given-names: "Grigory"
+    - family-names: "Volchkov"
+      given-names: "Egor V."
+    - family-names: "Kopantseva"
+      given-names: "Elena E."
+    - family-names: "Toropov"
+      given-names: "Artem L."
+    - family-names: "Ikonnikov"
+      given-names: "Alexander V."
+    - family-names: "Tuliavko"
+      given-names: "Vlada E."
+    - family-names: "Denisov"
+      given-names: "Evgeny V."
+    - family-names: "Kirsanov"
+      given-names: "Kirill I."
+    - family-names: "Yakubovskaya"
+      given-names: "Marianna G."
+  journal: "Journal of Biological Engineering"
+  year: 2026
+  month: 10
+  doi: "10.1186/s13036-026-00787-x"
+  url: "https://doi.org"
