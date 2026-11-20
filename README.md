@@ -76,6 +76,26 @@ ch.plot_signaling_bifurcation(
     df_final_sorted=df_asymmetric,
     lineage_A="CD8 T cells",
     lineage_B="CD14+ Monocytes"
+
+## Citation
+
+If you use **ChronoCCI** in your research, please cite our paper:
+
+> Puzanov, G., Volchkov, E.V., Kopantseva, E.E. *et al.* ChronoCCI decodes the chronological logic of cell-cell communication along branching single-cell trajectories. *J Biol Eng* (2026). https://doi.org/10.1186/s13036-026-00787-x
+
+### BibTeX
+
+```bibtex
+@article{Puzanov2026ChronoCCI,
+  title     = {ChronoCCI decodes the chronological logic of cell-cell communication along branching single-cell trajectories},
+  author    = {Puzanov, Grigory and Volchkov, Egor V. and Kopantseva, Elena E. and Toropov, Artem L. and Ikonnikov, Alexander V. and Tuliavko, Vlada E. and Denisov, Evgeny V. and Kirsanov, Kirill I. and Yakubovskaya, Marianna G.},
+  journal   = {Journal of Biological Engineering},
+  year      = {2026},
+  month     = {oct},
+  doi       = {10.1186/s13036-026-00787-x},
+  url       = {https://doi.org/10.1186/s13036-026-00787-x}
+}
+
     top_n_pairs=4,
     output_name="my_blood_study"
 )
