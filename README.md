@@ -76,6 +76,8 @@ ch.plot_signaling_bifurcation(
     df_final_sorted=df_asymmetric,
     lineage_A="CD8 T cells",
     lineage_B="CD14+ Monocytes"
+)
+```
 
 ## Citation
 
